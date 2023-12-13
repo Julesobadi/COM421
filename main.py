@@ -21,35 +21,29 @@ class City:
         self.name = name
         self.hotels = [{"Place": hotel, "Availability": 5} for hotel in hotels]
         self.apartments = [{"Place": apartment, "Availability": 5} for apartment in apartments]
+        self.cities = {
+            "Jeddah": {
+                "hotels": ["Jeddah Hilton", "Andalus Habitat Hotel", "Mövenpick Hotel City Star Jeddah", "The 40th Pearl Hotel Suites", "Blue Diamond Hotel"],
+                "apartments": ["Taj Jeddah Hotel Apartment", "White Pearl Al Basatin", "Khozama AlNahda", "Red Sea Studio PArtial Sea View", "Sky Private Studio"]
+            },
+            "Riyadh": {
+                "hotels": ["Grand Plaza Hotel", "Centro Olaya", "Dahab Hotel", "Hilton Riyadh Hotel", "Aswar Hotel Suites Riyadh"],
+                "apartments": ["Paradise of North Riyadh", "Rahaf Smart Residence", "Hitin Studio", "Walaa Homes-Luxury", "Diva Chalet"]
+            },
+            "Dammam": {
+                "hotels": ["Residence Inn Marriott Dammam", "Swiss Al Hamra Hotel", "Tripper Inn Hotel", "Braira Al Dammam", "Radisson Hotel Dammam"],
+                "apartments": ["TIME Dammam Residence", "Aros Al Faisaliah Units", "Lamssat El Saada", "Natwan Units", "Durra Taraf Residental"]
+            },
+            "Abha": {
+                "hotels": ["Blue Inn Boutique", "Abha Palace Hotel", "Qimam Park Hotel", "Golden Andalus Hotel", "Pearly Hotel"],
+                "apartments": ["Qasr Aldabab Housing Units", "Layali Rahaf Chalets", "Msakn Aldar Abha", "Sunrise Furnished Apartmet", "Masharef Abha Suites"]
+            },
+            "Makkah": {
+                "hotels": ["Montana Al Azizia Hotel", "Hotel Inn Makkah", "Hibatullah Hotel Makkah", "Hilton Makkah Hotel", "Jumeirah Makkah"],
+                "apartments": ["Holiday Apartment", "Rekaz Aparthotel", "Jabal Omar Hyatt Residental", "Makkah Towers", "Novotel Makkah"]
+            }
+        }
 
-
-cities = [
-    City("Jeddah",
-         ["Jeddah Hilton", "Andalus Habitat Hotel", "Mövenpick Hotel City Star Jeddah", "The 40th Pearl Hotel Suites",
-          "Blue Diamond Hotel"],
-         ["Taj Jeddah Hotel Apartment", "White Pearl Al Basatin", "Khozama AlNahda",
-          "Red Sea Studio PArtial Sea View", "Sky Private Studio"]),
-
-    City("Riyadh",
-         ["Grand Plaza Hotel", "Centro Olaya", "Dahab Hotel", "Hilton Riyadh Hotel", "Aswar Hotel Suites Riyadh"],
-         ["Paradise of North Riyadh", "Rahaf Smart Residence", "Hitin Studio", "Walaa Homes-Luxury", "Diva Chalet"]),
-
-    City("Dammam",
-         ["Residence Inn Marriott Dammam", "Swiss Al Hamra Hotel", "Tripper Inn Hotel", "Braira Al Dammam",
-          "Radisson Hotel Dammam"],
-         ["TIME Dammam Residence", "Aros Al Faisaliah Units", "Lamssat El Saada", "Natwan Units",
-          "Durra Taraf Residental"]),
-
-    City("Abha",
-         ["Blue Inn Boutique", "Abha Palace Hotel", "Qimam Park Hotel", "Golden Andalus Hotel", "Pearly Hotel"],
-         ["Qasr Aldabab Housing Units", "Layali Rahaf Chalets", "Msakn Aldar Abha", "Sunrise Furnished Apartmet",
-          "Masharef Abha Suites"]),
-
-    City("Makkah",
-         ["Montana Al Azizia Hotel", "Hotel Inn Makkah", "Hibatullah Hotel Makkah", "Hilton Makkah Hotel",
-          "Jumeirah Makkah"],
-         ["Holiday Apartment", "Rekaz Aparthotel", "Jabal Omar Hyatt Residental", "Makkah Towers", "Novotel Makkah"])
-]
 
 
 def show_menu_after_login(username, is_staff=False):
@@ -77,7 +71,7 @@ def show_menu_after_login(username, is_staff=False):
         elif choice == '5':
             book_now(cities, user_locations)
         elif choice == '6':
-            manage_locations(cities, user_locations, all_locations)
+            manage_locations(user_locations, all_locations)
         elif choice == '7':
             show_faq(is_staff=is_staff)
         elif choice == '8':
@@ -211,11 +205,11 @@ def display_all_places(cities, user_locations, all_locations):
 
             location_counter += 1  # Increment the counter
 
-    location_choice = input("Enter the number of the location to save (or 0 to go back): ")
+    location_choice = input("Enter number of location you wish to save or 0 to go back: ")
     return location_choice
 
 
-def manage_locations(cities, user_locations):
+def manage_locations(cities, user_locations, all_locations):
     global location_counter  # Use the global counter
 
     print("\n1. Save Locations")
@@ -238,15 +232,18 @@ def manage_locations(cities, user_locations):
                 save_location_to_file(selected_location)
                 print(f"Location '{selected_location['Place']}' saved to test.json.")
             else:
-                print(f"Invalid location choice. Please enter a number between 1 and {len(all_locations)}.")
+                print(f"Invalid location choice. Please enter a number between 1 and {location_counter - 1}.")
         except ValueError:
             print("Invalid input. Please enter a valid number.")
-        else:
-            print("No locations to load.")
     elif sub_choice == 'X':
         return  # Go back to the main menu
     else:
         print("Invalid choice. Please enter '1', '2', or 'X.")
+
+
+def save_location_to_file(self, filename="test.json"):
+    with open(filename, "w") as file:
+        json.dump(self.cities, file)
 
 
 def print_sorted_locations(all_locations):
@@ -271,32 +268,19 @@ def print_sorted_locations(all_locations):
     return sorted_locations  # Return the sorted list
 
 
-def save_location_to_file(location, filename="test.json"):
+def load_from_file(filename="test.json"):
     try:
         with open(filename, 'r') as file:
-            user_saved_locations = json.load(file)
+            return json.load(file)
     except FileNotFoundError:
-        user_saved_locations = []
+        return None
 
-    user_saved_locations.append(location)
-
-    with open(filename, 'w') as file:
-        json.dump(user_saved_locations, file, indent=2)
-
-
-def load_locations_from_file(filename="test.json"):
-    try:
-        with open(filename, 'r') as file:
-            user_locations = json.load(file)
-        print(f"Locations loaded from {filename}.")
-        return user_locations
-    except FileNotFoundError:
-        print(f"File {filename} not found. Returning an empty list.")
-        return []
 
 # In the manage_locations function:
 # Reset the global counter before each use
 location_counter = 1
+
+
 def search_location_type():
     location_type = input("Enter the type of location to search (Apartment/Hotel): ").capitalize()
     matching_locations = []
